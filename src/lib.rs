@@ -37,7 +37,7 @@
 //!     ///
 //!     /// * `fn get(&self, idx: usize) -> Option<Self::Ref>`
 //!     /// * `fn get_mut(&mut self, idx: usize) -> Option<Self::Mut>`
-//!     collection trait RbgCollection;
+//!     collection trait RgbCollection;
 //!
 //!     /// A trait for anything that is logically an immutable, shared
 //!     /// reference to an `Rgb`.
@@ -71,7 +71,7 @@
 //!         #[derive(Debug)]
 //!         struct RgbAos;
 //!
-//!         /// An immutable, shared reference to an `Rgb` inside of a `RbgAos`.
+//!         /// An immutable, shared reference to an `Rgb` inside of a `RgbAos`.
 //!         ///
 //!         /// Implements the `RgbRef` trait.
 //!         #[derive(Debug, Clone, Copy, PartialEq, Eq)]
