@@ -39,6 +39,13 @@
 //!     /// * `fn get_mut(&mut self, idx: usize) -> Option<Self::Mut>`
 //!     collection trait RgbCollection;
 //!
+//!     /// Iterator struct for collection.
+//!     ///
+//!     /// Generated trait method for Iterator:
+//!     ///
+//!     /// * `fn next(&mut self) -> Option<Self::Item>`
+//!     iterator struct RgbCollectionIterator;
+//!
 //!     /// A trait for anything that is logically an immutable, shared
 //!     /// reference to an `Rgb`.
 //!     ///
@@ -120,6 +127,9 @@ macro_rules! aossoa {
 
         $( #[$trait_attr:meta] )*
         collection trait $collection_trait_name:ident ;
+
+        $( #[$iterator_struct_attr:meta] )*
+        iterator struct $iterator_struct_name:ident ;
 
         $( #[$ref_trait_attr:meta] )*
         ref trait $ref_trait_name:ident ;
@@ -223,8 +233,13 @@ macro_rules! aossoa {
             /// or `None` if the index is out of bounds.
             fn get_mut(&'a mut self, idx: usize) -> Option<Self::Mut>;
 
-            // /// TODO FITZGEN
-            // fn iter(&'a self) -> Self::Iter;
+            /// Provides a forward iterator.
+            fn iter(&'a self) -> $iterator_struct_name <'a, Self> {
+                $iterator_struct_name::<'a, Self> {
+                    collection: &self,
+                    index: 0,
+                }
+            }
 
             // /// TODO FITZGEN
             // fn iter_mut(&'a mut self) -> Self::IterMut;
@@ -244,6 +259,27 @@ macro_rules! aossoa {
             $(
                 fn $field_name (&mut self) -> &mut $field_ty;
             )*
+        }
+
+        // Iterator ////////////////////////////////////////////////////////////
+
+        pub struct $iterator_struct_name<'a, T>
+            where T: 'a + $collection_trait_name<'a>
+        {
+            collection: &'a T,
+            index: usize,
+        }
+
+        impl<'a, T> Iterator for $iterator_struct_name<'a, T>
+            where T: 'a + $collection_trait_name<'a>
+        {
+            type Item = T::Ref;
+
+            fn next(&mut self) -> Option<Self::Item> {
+                let value = self.collection.get(self.index);
+                self.index += 1;
+                value
+            }
         }
 
         // AOS /////////////////////////////////////////////////////////////////
@@ -509,6 +545,7 @@ mod tests {
         }
 
         collection trait RgbCollection;
+        iterator struct RgbCollectionIterator;
         ref trait RgbRef;
         ref mut trait RgbRefMut;
 
@@ -537,6 +574,16 @@ mod tests {
         sum
     }
 
+    fn sum_all_rgb_iter<'a, T: RgbCollection<'a>>(rgbs: &'a T) -> usize {
+        let mut sum = 0;
+        for rgb in rgbs.iter() {
+            sum += *rgb.r() as usize;
+            sum += *rgb.g() as usize;
+            sum += *rgb.b() as usize;
+        }
+        sum
+    }
+
     #[test]
     fn sum_all_rgb_test() {
         let aos = RgbAos::from_iter([
@@ -559,5 +606,7 @@ mod tests {
 
         assert_eq!(sum_all_rgb(&aos), 36);
         assert_eq!(sum_all_rgb(&soa), 36);
+        assert_eq!(sum_all_rgb_iter(&aos), 36);
+        assert_eq!(sum_all_rgb_iter(&soa), 36);
     }
 }
