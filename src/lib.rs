@@ -233,8 +233,12 @@ macro_rules! aossoa {
             /// or `None` if the index is out of bounds.
             fn get_mut(&'a mut self, idx: usize) -> Option<Self::Mut>;
 
+            /// Provides a forward iterator.
             fn iter(&'a self) -> $iterator_struct_name <'a, Self> {
-                $iterator_struct_name::<'a, Self> { collection: &self, index: 0}
+                $iterator_struct_name::<'a, Self> {
+                    collection: &self,
+                    index: 0,
+                }
             }
 
             // /// TODO FITZGEN
@@ -273,8 +277,6 @@ macro_rules! aossoa {
 
             fn next(&mut self) -> Option<Self::Item> {
                 let value = self.collection.get(self.index);
-                // TODO: We could probably reuse the index in the Ref type somehow
-                //       Possibly by making the Ref type the iterator
                 self.index += 1;
                 value
             }
